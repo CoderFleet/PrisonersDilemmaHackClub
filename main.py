@@ -73,8 +73,8 @@ def play_round(player1, player2, log_widget):
     log_widget.see(tk.END)
 
 def update_gui(player1, player2, label1, label2, progress1, progress2, history_widget, stats_widget, canvas):
-    label1.configure(text=f"{player1.name} strategy: {player1.history[-1]} | Score: {player1.score} | Cooperate: {player1.cooperate_count} | Defect: {player1.defect_count}")
-    label2.configure(text=f"{player2.name} strategy: {player2.history[-1]} | Score: {player2.score} | Cooperate: {player2.cooperate_count} | Defect: {player2.defect_count}")
+    label1.configure(text=f"{player1.name} - Strategy: {player1.history[-1] if player1.history else 'N/A'} | Score: {player1.score} | Cooperate: {player1.cooperate_count} | Defect: {player1.defect_count}")
+    label2.configure(text=f"{player2.name} - Strategy: {player2.history[-1] if player2.history else 'N/A'} | Score: {player2.score} | Cooperate: {player2.cooperate_count} | Defect: {player2.defect_count}")
     progress1['value'] = player1.score
     progress2['value'] = player2.score
     
@@ -83,8 +83,11 @@ def update_gui(player1, player2, label1, label2, progress1, progress2, history_w
         history_widget.insert(tk.END, f"Round {i+1}: {player1.name} - {action1}, {player2.name} - {action2}\n")
     
     stats_widget.delete(1.0, tk.END)
-    stats_widget.insert(tk.END, f"{player1.name} - Cooperate: {player1.cooperate_count}, Defect: {player1.defect_count}\n")
-    stats_widget.insert(tk.END, f"{player2.name} - Cooperate: {player2.cooperate_count}, Defect: {player2.defect_count}\n")
+    total_rounds = len(player1.history)
+    win_rate1 = (player1.cooperate_count + player1.defect_count) / total_rounds if total_rounds > 0 else 0
+    win_rate2 = (player2.cooperate_count + player2.defect_count) / total_rounds if total_rounds > 0 else 0
+    stats_widget.insert(tk.END, f"{player1.name} - Wins: {player1.cooperate_count + player1.defect_count}, Win Rate: {win_rate1:.2f}\n")
+    stats_widget.insert(tk.END, f"{player2.name} - Wins: {player2.cooperate_count + player2.defect_count}, Win Rate: {win_rate2:.2f}\n")
     
     canvas.delete("all")
     width = 800
@@ -150,59 +153,59 @@ def main():
     strategy2_var = tk.StringVar(value="Random")
     
     strategy1_label = ttk.Label(root, text=f"{player1_name} Strategy:")
-    strategy1_label.pack(pady=5)
+    strategy1_label.grid(row=0, column=0, padx=10, pady=5, sticky="w")
     strategy1_menu = ttk.Combobox(root, textvariable=strategy1_var, values=["Tit for Tat", "Random", "Always Cooperate", "Always Defect", "Grim Trigger", "Pavlov"])
-    strategy1_menu.pack(pady=5)
+    strategy1_menu.grid(row=0, column=1, padx=10, pady=5)
     
     strategy2_label = ttk.Label(root, text=f"{player2_name} Strategy:")
-    strategy2_label.pack(pady=5)
+    strategy2_label.grid(row=1, column=0, padx=10, pady=5, sticky="w")
     strategy2_menu = ttk.Combobox(root, textvariable=strategy2_var, values=["Tit for Tat", "Random", "Always Cooperate", "Always Defect", "Grim Trigger", "Pavlov"])
-    strategy2_menu.pack(pady=5)
+    strategy2_menu.grid(row=1, column=1, padx=10, pady=5)
     
     player1 = Player(player1_name, get_strategy(strategy1_var.get()))
     player2 = Player(player2_name, get_strategy(strategy2_var.get()))
     
     label1 = ttk.Label(root, text="")
-    label1.pack(pady=10)
+    label1.grid(row=2, column=0, columnspan=2, pady=10, sticky="w")
     progress1 = ttk.Progressbar(root, orient=tk.HORIZONTAL, length=200, mode='determinate')
-    progress1.pack(pady=10)
+    progress1.grid(row=3, column=0, columnspan=2, pady=10)
     
     label2 = ttk.Label(root, text="")
-    label2.pack(pady=10)
+    label2.grid(row=4, column=0, columnspan=2, pady=10, sticky="w")
     progress2 = ttk.Progressbar(root, orient=tk.HORIZONTAL, length=200, mode='determinate')
-    progress2.pack(pady=10)
+    progress2.grid(row=5, column=0, columnspan=2, pady=10)
     
     num_rounds_var = tk.StringVar(value="10")
     num_rounds_label = ttk.Label(root, text="Number of Rounds:")
-    num_rounds_label.pack(pady=5)
+    num_rounds_label.grid(row=6, column=0, padx=10, pady=5, sticky="w")
     num_rounds_entry = ttk.Entry(root, textvariable=num_rounds_var)
-    num_rounds_entry.pack(pady=5)
+    num_rounds_entry.grid(row=6, column=1, padx=10, pady=5)
     
     log_widget = tk.Text(root, height=10, width=50)
-    log_widget.pack(pady=10)
+    log_widget.grid(row=7, column=0, columnspan=2, pady=10)
     
     history_widget = tk.Text(root, height=10, width=50)
-    history_widget.pack(pady=10)
+    history_widget.grid(row=8, column=0, columnspan=2, pady=10)
     
     stats_widget = tk.Text(root, height=5, width=50)
-    stats_widget.pack(pady=10)
+    stats_widget.grid(row=9, column=0, columnspan=2, pady=10)
     
     canvas = tk.Canvas(root, width=800, height=300, bg='white')
-    canvas.pack(pady=10)
+    canvas.grid(row=10, column=0, columnspan=2, pady=10)
     
     start_button = ttk.Button(root, text="Start Simulation", command=lambda: start_simulation(
         Player(player1_name, get_strategy(strategy1_var.get())),
         Player(player2_name, get_strategy(strategy2_var.get())),
         num_rounds_var, label1, label2, progress1, progress2, log_widget, history_widget, stats_widget, canvas
     ))
-    start_button.pack(pady=10)
+    start_button.grid(row=11, column=0, padx=10, pady=10, sticky="ew")
     
     reset_button = ttk.Button(root, text="Reset Simulation", command=lambda: reset_simulation(
         Player(player1_name, get_strategy(strategy1_var.get())),
         Player(player2_name, get_strategy(strategy2_var.get())),
         label1, label2, progress1, progress2, log_widget, history_widget, stats_widget, canvas
     ))
-    reset_button.pack(pady=10)
+    reset_button.grid(row=11, column=1, padx=10, pady=10, sticky="ew")
     
     root.mainloop()
 
