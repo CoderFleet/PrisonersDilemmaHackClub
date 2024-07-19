@@ -26,6 +26,12 @@ def tit_for_tat(player, opponent):
 def random_strategy(player, opponent):
     return random.choice([COOPERATE, DEFECT])
 
+def always_cooperate(player, opponent):
+    return COOPERATE
+
+def always_defect(player, opponent):
+    return DEFECT
+
 def play_round(player1, player2, log_widget):
     action1 = player1.choose_action(player2)
     action2 = player2.choose_action(player1)
@@ -76,12 +82,37 @@ def reset_simulation(player1, player2, label1, label2, progress1, progress2, log
     progress2['value'] = 0
     log_widget.delete(1.0, tk.END)
 
+def get_strategy(strategy_name):
+    strategies = {
+        "Tit for Tat": tit_for_tat,
+        "Random": random_strategy,
+        "Always Cooperate": always_cooperate,
+        "Always Defect": always_defect,
+    }
+    return strategies[strategy_name]
+
 def main():
-    player1 = Player("Player 1", tit_for_tat)
-    player2 = Player("Player 2", random_strategy)
-    
     root = tk.Tk()
     root.title("Prisoner's Dilemma Simulation")
+    
+    player1_name = "Player 1"
+    player2_name = "Player 2"
+    
+    strategy1_var = tk.StringVar(value="Tit for Tat")
+    strategy2_var = tk.StringVar(value="Random")
+    
+    strategy1_label = ttk.Label(root, text=f"{player1_name} Strategy:")
+    strategy1_label.pack(pady=5)
+    strategy1_menu = ttk.Combobox(root, textvariable=strategy1_var, values=["Tit for Tat", "Random", "Always Cooperate", "Always Defect"])
+    strategy1_menu.pack(pady=5)
+    
+    strategy2_label = ttk.Label(root, text=f"{player2_name} Strategy:")
+    strategy2_label.pack(pady=5)
+    strategy2_menu = ttk.Combobox(root, textvariable=strategy2_var, values=["Tit for Tat", "Random", "Always Cooperate", "Always Defect"])
+    strategy2_menu.pack(pady=5)
+    
+    player1 = Player(player1_name, get_strategy(strategy1_var.get()))
+    player2 = Player(player2_name, get_strategy(strategy2_var.get()))
     
     label1 = ttk.Label(root, text="")
     label1.pack(pady=10)
@@ -99,14 +130,22 @@ def main():
     num_rounds_entry = ttk.Entry(root, textvariable=num_rounds_var)
     num_rounds_entry.pack(pady=5)
     
-    start_button = ttk.Button(root, text="Start Simulation", command=lambda: start_simulation(player1, player2, num_rounds_var, label1, label2, progress1, progress2, log_widget))
-    start_button.pack(pady=10)
-    
-    reset_button = ttk.Button(root, text="Reset Simulation", command=lambda: reset_simulation(player1, player2, label1, label2, progress1, progress2, log_widget))
-    reset_button.pack(pady=10)
-    
     log_widget = tk.Text(root, height=10, width=50)
     log_widget.pack(pady=10)
+    
+    start_button = ttk.Button(root, text="Start Simulation", command=lambda: start_simulation(
+        Player(player1_name, get_strategy(strategy1_var.get())),
+        Player(player2_name, get_strategy(strategy2_var.get())),
+        num_rounds_var, label1, label2, progress1, progress2, log_widget
+    ))
+    start_button.pack(pady=10)
+    
+    reset_button = ttk.Button(root, text="Reset Simulation", command=lambda: reset_simulation(
+        Player(player1_name, get_strategy(strategy1_var.get())),
+        Player(player2_name, get_strategy(strategy2_var.get())),
+        label1, label2, progress1, progress2, log_widget
+    ))
+    reset_button.pack(pady=10)
     
     root.mainloop()
 
