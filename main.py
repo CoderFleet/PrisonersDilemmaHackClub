@@ -72,7 +72,7 @@ def play_round(player1, player2, log_widget):
     log_widget.insert(tk.END, f"Round: {len(player1.history)}, {player1.name} action: {action1}, {player2.name} action: {action2}\n")
     log_widget.see(tk.END)
 
-def update_gui(player1, player2, label1, label2, progress1, progress2, history_widget, stats_widget):
+def update_gui(player1, player2, label1, label2, progress1, progress2, history_widget, stats_widget, canvas):
     label1.configure(text=f"{player1.name} strategy: {player1.history[-1]} | Score: {player1.score} | Cooperate: {player1.cooperate_count} | Defect: {player1.defect_count}")
     label2.configure(text=f"{player2.name} strategy: {player2.history[-1]} | Score: {player2.score} | Cooperate: {player2.cooperate_count} | Defect: {player2.defect_count}")
     progress1['value'] = player1.score
@@ -85,21 +85,32 @@ def update_gui(player1, player2, label1, label2, progress1, progress2, history_w
     stats_widget.delete(1.0, tk.END)
     stats_widget.insert(tk.END, f"{player1.name} - Cooperate: {player1.cooperate_count}, Defect: {player1.defect_count}\n")
     stats_widget.insert(tk.END, f"{player2.name} - Cooperate: {player2.cooperate_count}, Defect: {player2.defect_count}\n")
+    
+    canvas.delete("all")
+    width = 800
+    height = 300
+    step = width / max(len(player1.history), 1)
+    for i, (action1, action2) in enumerate(zip(player1.history, player2.history)):
+        x = i * step
+        y1 = height - (player1.cooperate_count / max(player1.cooperate_count + player1.defect_count, 1) * height)
+        y2 = height - (player2.cooperate_count / max(player2.cooperate_count + player2.defect_count, 1) * height)
+        canvas.create_line(x, height, x, y1, fill="blue", width=2)
+        canvas.create_line(x, height, x, y2, fill="red", width=2)
 
-def simulate_rounds(player1, player2, num_rounds, label1, label2, progress1, progress2, log_widget, history_widget, stats_widget):
+def simulate_rounds(player1, player2, num_rounds, label1, label2, progress1, progress2, log_widget, history_widget, stats_widget, canvas):
     for _ in range(num_rounds):
         play_round(player1, player2, log_widget)
-        update_gui(player1, player2, label1, label2, progress1, progress2, history_widget, stats_widget)
+        update_gui(player1, player2, label1, label2, progress1, progress2, history_widget, stats_widget, canvas)
         label1.update()
         label2.update()
         progress1.update()
         progress2.update()
 
-def start_simulation(player1, player2, num_rounds_var, label1, label2, progress1, progress2, log_widget, history_widget, stats_widget):
+def start_simulation(player1, player2, num_rounds_var, label1, label2, progress1, progress2, log_widget, history_widget, stats_widget, canvas):
     num_rounds = int(num_rounds_var.get())
-    simulate_rounds(player1, player2, num_rounds, label1, label2, progress1, progress2, log_widget, history_widget, stats_widget)
+    simulate_rounds(player1, player2, num_rounds, label1, label2, progress1, progress2, log_widget, history_widget, stats_widget, canvas)
 
-def reset_simulation(player1, player2, label1, label2, progress1, progress2, log_widget, history_widget, stats_widget):
+def reset_simulation(player1, player2, label1, label2, progress1, progress2, log_widget, history_widget, stats_widget, canvas):
     player1.score = 0
     player2.score = 0
     player1.history = []
@@ -115,6 +126,7 @@ def reset_simulation(player1, player2, label1, label2, progress1, progress2, log
     log_widget.delete(1.0, tk.END)
     history_widget.delete(1.0, tk.END)
     stats_widget.delete(1.0, tk.END)
+    canvas.delete("all")
 
 def get_strategy(strategy_name):
     strategies = {
@@ -175,17 +187,20 @@ def main():
     stats_widget = tk.Text(root, height=5, width=50)
     stats_widget.pack(pady=10)
     
+    canvas = tk.Canvas(root, width=800, height=300, bg='white')
+    canvas.pack(pady=10)
+    
     start_button = ttk.Button(root, text="Start Simulation", command=lambda: start_simulation(
         Player(player1_name, get_strategy(strategy1_var.get())),
         Player(player2_name, get_strategy(strategy2_var.get())),
-        num_rounds_var, label1, label2, progress1, progress2, log_widget, history_widget, stats_widget
+        num_rounds_var, label1, label2, progress1, progress2, log_widget, history_widget, stats_widget, canvas
     ))
     start_button.pack(pady=10)
     
     reset_button = ttk.Button(root, text="Reset Simulation", command=lambda: reset_simulation(
         Player(player1_name, get_strategy(strategy1_var.get())),
         Player(player2_name, get_strategy(strategy2_var.get())),
-        label1, label2, progress1, progress2, log_widget, history_widget, stats_widget
+        label1, label2, progress1, progress2, log_widget, history_widget, stats_widget, canvas
     ))
     reset_button.pack(pady=10)
     
