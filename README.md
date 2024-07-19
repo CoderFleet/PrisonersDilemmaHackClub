@@ -1,5 +1,4 @@
-Prisoner's Dilemma Simulation
-Overview
+
 I built a Python-based Prisoner's Dilemma simulation with a graphical user interface (GUI) to explore different strategies and see their real-time outcomes. This project allows you to test various strategies in the classic game theory scenario and visualize how each strategy performs over multiple rounds.
 
 Features
